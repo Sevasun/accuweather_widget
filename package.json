@@ -1,0 +1,32 @@
+{
+  "name": "slider",
+  "version": "1.0.0",
+  "description": "1. default oop slider - done! 2. pagination - done! 3. separate sliders - done! 4. step size - done! 5. touch events - done! 6. json slides 7. tabs with json sliders 8. ES6+",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "webpack-dev-server --mode development --open",
+    "build": "webpack --mode production"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sevasun/slider.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Sevasun/slider/issues"
+  },
+  "homepage": "https://github.com/Sevasun/slider#readme",
+  "devDependencies": {
+    "@babel/core": "^7.2.2",
+    "@babel/preset-env": "^7.3.1",
+    "babel-loader": "^8.0.5",
+    "webpack": "^4.29.3",
+    "webpack-cli": "^3.2.3",
+    "webpack-dev-server": "^3.1.14"
+  },
+  "dependencies": {
+    "@webpack-cli/init": "^0.1.3"
+  }
+}
