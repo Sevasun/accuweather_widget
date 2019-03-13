@@ -22,3 +22,107 @@ img {
   max-width: 100%;
 }
 
+.weather-widget {
+  width: 500px;
+  color: #fff;
+  margin: 0 auto;
+  padding: 20px;
+  position: relative;
+  z-index: 2;
+  text-align: center;
+}
+
+.weather-widget:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-image: url('../images/image5.jpg');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+  z-index: -3;
+}
+
+.weather-widget:after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: -2;
+  background-color: rgba(0,0,0,.5);
+}
+
+.date {
+  font-size: 18px;
+}
+
+.date p {
+  margin-top: 0;
+}
+
+.settings-form {
+  padding: 15px;
+  font-size: 14px;
+}
+
+.settings-form .input-container {
+  margin-bottom: 10px;
+}
+
+.settings-form input[type="text"],
+.settings-form input[type="search"],
+.settings-form input[type="url"],
+.settings-form input[type="email"],
+select {
+  width: 100%;
+  padding: 8px 15px;
+}
+
+.weather-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.icons-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+}
+
+.icons-row .icon {
+  padding: 0 15px;
+  font-size: 32px;
+}
+
+.temperature div {
+  display: block;
+  font-size: 18px;
+  font-weight: 300;
+}
+
+.temperature .max {
+  font-weight: 700;
+}
+
+.reload-btn {
+  padding: 0;
+  margin: 0;
+  border: 0;
+  background: none;
+  min-width: 0;
+  cursor: pointer;
+  color: #fff;
+  font-size: 24px;
+  transition: transform .4s ease-in;
+}
+
+.reload-btn:hover {
+  transform: rotateZ(360deg);
+}
