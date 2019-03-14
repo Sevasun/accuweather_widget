@@ -6,17 +6,29 @@ function Weather(options) {
         requestLink: 'forecasts/v1/daily/1day/'
     };
 
+    let widget = document.querySelector('.weather-widget');
     this.settings = Object.assign(defaultOptions, options);
-    this.data = document.querySelector('.date-value');
-    this.tempMax = document.querySelector('.temperature .max');
-    this.tempMin = document.querySelector('.temperature .min');
-    this.icon = document.querySelector('.icon');
-    this.iconPhrase = document.querySelector('.icon-phrase');
-
+    this.data = widget.querySelector('.date-value');
+    this.tempMax = widget.querySelector('.temperature .max');
+    this.tempMin = widget.querySelector('.temperature .min');
+    this.iconDay = widget.querySelector('.day-icon .icon');
+    this.iconPhraseDay = widget.querySelector('.day-icon .icon-phrase');
+    this.iconNight = widget.querySelector('.night-icon .icon');
+    this.iconPhraseNight = widget.querySelector('.night-icon .icon-phrase');
+    // Скорее всего заменить на this внутри forEach
+    let settingsForm = widget.querySelector('.settings-form');
+    let selectCity = settingsForm.querySelector('[name="city"]');
+    let selectType = settingsForm.querySelector('[name="type"]');
+    let detailsCheckbox = settingsForm.querySelector('[name="details"]');
+    
+    let reloadBtn = widget.querySelector('.weather-widget .reload-btn');
 
     let self = this;
-    
-    // let requestAddress = this.settings.baseUrl + this.settings.requestLink + this.settings.locationCode + '?apikey=' + this.settings.apiKey + '&metric=true';
+
+    function getAddress() {
+        let address = self.settings.baseUrl + forecastTypeOptions(selectType).forecastLink + getInputValue(selectCity) + '?apikey=' + self.settings.apiKey + '&metric=true' + setDetails(detailsCheckbox.checked);
+        return address;
+    }
     
     function sendRequest(address) {
         let request = fetch(address, {
@@ -36,9 +48,16 @@ function Weather(options) {
                             self.tempMax.innerHTML = convertToCelsius(elem.Temperature.Maximum.UnitType, elem.Temperature.Maximum.Value);
                             self.tempMin.innerHTML = convertToCelsius(elem.Temperature.Minimum.UnitType, elem.Temperature.Minimum.Value);
                             
-                            deleteChildren(self.icon);
-                            self.icon.appendChild(createIcon(elem.Day.Icon));
-                            self.iconPhrase.innerHTML = elem.Day.IconPhrase;
+                            deleteChildren(self.iconDay);
+                            self.iconDay.appendChild(createIcon(elem.Day.Icon));
+                            self.iconPhraseDay.innerHTML = elem.Day.IconPhrase;
+                            deleteChildren(self.iconNight);
+                            self.iconNight.appendChild(createIcon(elem.Night.Icon));
+                            self.iconPhraseNight.innerHTML = elem.Night.IconPhrase;
+
+                            if(detailsCheckbox.checked) {
+                                widget.querySelector('.primary-frame').appendChild(createMoonPhase(elem.Moon.Phase));
+                            }
                         });
                         return array;
                     })
@@ -46,12 +65,13 @@ function Weather(options) {
 
     sendRequest(getAddress());
 
-
+    reloadBtn.addEventListener('click', (e) => {
+        sendRequest(getAddress());
+    });
 }
 
-function getAddress() {
-  let address = self.settings.baseUrl + self.settings.requestLink + self.settings.locationCode + '?apikey=' + self.settings.apiKey + '&metric=true';
-  return address;
+function getInputValue(elem) {
+    return elem.value;
 }
 
 function monthText (number) {
@@ -98,7 +118,7 @@ function monthText (number) {
     return month;
 }
 
-function parseDate (date) {
+function parseDate(date) {
     let fullDate = date.slice(0, date.indexOf('T'));
     let fullTime;
     if(date.indexOf('+') !== -1) {
@@ -191,6 +211,47 @@ function setWeatherIcon (icon) {
             break;
   }
   return iconClass;
+}
+
+function forecastTypeOptions(elem) {
+    let forecastLink;
+    let wayToDate;
+    switch (elem.value) {
+        case 'today': forecastLink = 'forecasts/v1/daily/1day/';
+                    wayToDate = 'Date';
+                    break;
+        case 'hour1': forecastLink = 'forecasts/v1/hourly/1hour/';
+                    break;
+        case 'days10': forecastLink = 'forecasts/v1/daily/10day/';
+                    break;
+        default: forecastLink = 'forecasts/v1/daily/1day/';
+    }
+    console.log(forecastLink);
+    return {
+        'forecastLink': forecastLink,
+        'wayToDate': wayToDate
+    };
+}
+
+function setDetails(value) {
+    if(value) {
+        return '&details=true';
+    } else {
+        return '';
+    }
+}
+
+function createMoonPhase(phase) {
+    let holder = document.createElement('div');
+    let text = document.createElement('span');
+    text.innerHTML = "Moon phase is: ";
+    let moonPhase = document.createElement('strong');
+    moonPhase.classList.add('phase');
+    moonPhase.innerHTML = phase;
+    holder.classList.add('moon');
+    holder.appendChild(text);
+    holder.appendChild(moonPhase);
+    return holder;
 }
 
 function deleteChildren(parent) {

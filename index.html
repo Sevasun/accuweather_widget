@@ -14,17 +14,22 @@
 			<div class="weather-widget">
 				<div class="widget-inner">
 					<div class="settings-frame">
-						<div class="settings-form">
+						<form class="settings-form">
 							<div class="input-container">
 								<label for="city">Choose your city</label>
 								<select name="city" id="city">
 									<option value="323903">Kharkiv</option>
+									<option value="324505">Kyiv</option>
+									<option value="331122">Odessa</option>
+									<option value="324561">Lviv</option>
 								</select>
 							</div>
 							<div class="input-container">
 								<label for="type">Choose forecast type</label>
 								<select name="type" id="type">
 									<option value="today">Today</option>
+									<option value="hour1" disabled>1 hour</option>
+									<option value="days10" disabled>10 days</option>
 								</select>
 							</div>
 							<div class="input-container">
@@ -38,11 +43,19 @@
 							<p>Погода <span class="date-value"></span></p>
 						</div>
 						<div class="weather-status">
-							<div class="icons-row">
-								<div class="icon">
-									<i class="fas fa-sun"></i>
+							<div class="icon-status">
+								<div class="icons-row day-icon">
+									<div class="icon">
+										<i class="fas fa-sun"></i>
+									</div>
+									<div class="icon-phrase">Clear</div>
 								</div>
-								<div class="icon-phrase">Clear</div>
+								<div class="icons-row night-icon">
+									<div class="icon">
+										<i></i>
+									</div>
+									<div class="icon-phrase"></div>
+								</div>
 							</div>
 							<div class="temperature">
 								<div>
