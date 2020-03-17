@@ -13,17 +13,18 @@ function Weather(options) {
     let { apiKey, locationCode, baseUrl, requestLink, targetWidget, settingsForm } = this.settings;
 
     let widget = document.querySelector(targetWidget);
-    let form = widget.querySelector(settingsForm);
-    this.defaultCity = form.querySelector('[name="city"]');
-    this.defaultType = form.querySelector('[name="type"]');
-    this.detailsButton = form.querySelector('[name="details"]');
+    this.form = widget.querySelector(settingsForm);
+    this.defaultCity = this.form.querySelector('[name="city"]');
+    this.defaultType = this.form.querySelector('[name="type"]');
+    this.detailsButton = this.form.querySelector('[name="details"]');
     this.reloadButton = widget.querySelector('.reload-btn');
     this.maxTempField = widget.querySelector('.temperature .max');
     this.minTempField = widget.querySelector('.temperature .min');
-    this.dayIcon = widget.querySelector('.day-icon .icon');
-    this.nightIcon = widget.querySelector('.night-icon .icon');
+    this.dayIcon = widget.querySelector('.day-icon .icon i');
+    this.nightIcon = widget.querySelector('.night-icon .icon i');
     this.dayIconText = widget.querySelector('.day-icon .icon-phrase');
     this.nightIconText = widget.querySelector('.night-icon .icon-phrase');
+    this.dateField = widget.querySelector('.date-value');
 
     let self = this;
 
@@ -40,8 +41,30 @@ function Weather(options) {
             })
             .then((array) => {
                 console.log(array);
+                let forecast = parseForecast(array);
+                let date = forecast.date;
+                let forecastDate = new Date(date);
+                let options = {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    weekday: 'long',
+                    hour: 'numeric',
+                    minute: 'numeric'
+                };
+                self.dateField.innerText = forecastDate.toLocaleString('RU', options);
+                self.maxTempField.innerText = forecast.maxTemp;
+                self.minTempField.innerText = forecast.minTemp;
+                self.dayIcon.classList.add('fa', forecast.dayIconClass);
+                self.dayIconText.innerText = forecast.dayIconText;
+                self.nightIcon.classList.add('fa', forecast.nightIconClass);
+                self.nightIconText.innerText = forecast.nightIconText;
             });
     }
+
+    self.reloadButton.addEventListener('click', () => {
+        sendRequest(requestUrl);
+    });
 
     sendRequest(requestUrl);
 }
@@ -53,11 +76,17 @@ function getAddress(url, request, location, key, details = false, metric = false
     return address;
 }
 
-function parseDate(date) {
-    let dateClear = date.slice(0, date.indexOf('T'));
-    let year = dateClear.substr(0, 4);
-    let day = dateClear.substr(8, 2);
-    let month = dateClear.substr(5, 2)  
+function parseForecast(array) {
+    let forecastObj = array.DailyForecasts[0];
+    return {
+        date: forecastObj.Date,
+        minTemp: forecastObj.Temperature.Minimum.Value,
+        maxTemp: forecastObj.Temperature.Maximum.Value,
+        dayIconClass: setWeatherIcon(forecastObj.Day.Icon),
+        dayIconText: forecastObj.Day.IconPhrase,
+        nightIconClass: setWeatherIcon(forecastObj.Night.Icon),
+        nightIconText: forecastObj.Night.IconPhrase
+    }
 }
 
 function setWeatherIcon (icon) {
@@ -118,7 +147,7 @@ function setWeatherIcon (icon) {
               break;
     }
     return iconClass;
-  }
+}
 
 function monthText (number) {
     let month;
@@ -162,6 +191,10 @@ function monthText (number) {
         }
 
     return month;
+}
+
+function setTemperature(elem, temp) {
+    return elem.innerText = `${temp}&deg;C`;
 }
 
 export default Weather;
