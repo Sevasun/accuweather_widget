@@ -83,7 +83,7 @@ select {
   padding: 8px 15px;
 }
 
-.weather-status {
+.weather-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -91,17 +91,18 @@ select {
 
 .icons-row {
   display: flex;
-  justify-content: center;
   align-items: center;
   font-size: 14px;
 }
 
 .icons-row .icon {
-  padding: 0 15px;
+  padding: 0 5px;
   font-size: 32px;
+  width: 60px;
+  text-align: center;
 }
 
-.temperature div {
+.temperature {
   display: block;
   font-size: 18px;
   font-weight: 300;

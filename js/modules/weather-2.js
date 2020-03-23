@@ -1,23 +1,21 @@
 function Weather(options) {
     let defaultOptions = {
         apiKey: 'h0YJgo2hCXfxFIq1VoBN8ousyZa0Ijf2',
-        locationCode: '323903',
-        baseUrl: 'http://dataservice.accuweather.com/',
-        requestLink: 'forecasts/v1/daily/1day/',
+        baseUrl: 'http://dataservice.accuweather.com/forecasts/v1/',
         targetWidget: '.weather-widget',
         settingsForm: '.settings-form'
     };
 
     this.settings = Object.assign(defaultOptions, options);
 
-    let { apiKey, locationCode, baseUrl, requestLink, targetWidget, settingsForm } = this.settings;
+    let { apiKey, baseUrl, targetWidget, settingsForm } = this.settings;
 
     let widget = document.querySelector(targetWidget);
     this.form = widget.querySelector(settingsForm);
     this.defaultCity = this.form.querySelector('[name="city"]');
     this.defaultType = this.form.querySelector('[name="type"]');
     this.detailsButton = this.form.querySelector('[name="details"]');
-    this.detailsHolder = this.form.querySelector('.primary-frame');
+    this.detailsHolder = widget.querySelector('.primary-frame');
     this.reloadButton = widget.querySelector('.reload-btn');
     this.maxTempField = widget.querySelector('.temperature .max');
     this.minTempField = widget.querySelector('.temperature .min');
@@ -26,13 +24,26 @@ function Weather(options) {
     this.dayIconText = widget.querySelector('.day-icon .icon-phrase');
     this.nightIconText = widget.querySelector('.night-icon .icon-phrase');
     this.dateField = widget.querySelector('.date-value');
+    this.weatherStatus = widget.querySelector('.weather-status');
 
     let detailsFlag = false;
+
+    let locationCode = function() {
+        return self.defaultCity.value;
+    };
+
+    let requestLink = function() {
+        return self.defaultType.value;
+    };
+
+    let requestType = function() {
+        return getRequestType(self.defaultType.value);
+    };
 
     let self = this;
 
     function requestUrl() {
-        return getAddress(baseUrl, requestLink, locationCode, apiKey, detailsFlag, true)
+        return getAddress(baseUrl, requestType(), requestLink(), locationCode(), apiKey, detailsFlag, true)
     }
     
     function sendRequest(url) {
@@ -53,9 +64,7 @@ function Weather(options) {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric',
-                    weekday: 'long',
-                    hour: 'numeric',
-                    minute: 'numeric'
+                    weekday: 'long'
                 };
                 self.dateField.innerText = forecastDate.toLocaleString('RU', options);
                 self.maxTempField.innerText = forecast.maxTemp;
@@ -65,23 +74,18 @@ function Weather(options) {
                 self.nightIcon.classList.add('fa', forecast.nightIconClass);
                 self.nightIconText.innerText = forecast.nightIconText;
 
-                self.detailsFlag ? createWind(self.detailsHolder, forecast.windSpeed) : deleteWind(self.detailsHolder);
+                detailsFlag ? createWind(self.detailsHolder, forecast.windSpeed) : deleteWind(self.detailsHolder);
             });
     }
 
     function detailsSwitch() {
-        if (this.checked) {
-            detailsFlag = true;
+            this.checked ? detailsFlag = true : detailsFlag = false;
             sendRequest(requestUrl());
-        } else {
-            detailsFlag = false;
-            sendRequest(requestUrl());
-        }
     }
 
     function parseForecast(array) {
-        let forecastObj = array.DailyForecasts[0];
-        return {
+        const forecastObj = array.DailyForecasts[0];
+        let forecast = {
             date: forecastObj.Date,
             minTemp: forecastObj.Temperature.Minimum.Value,
             maxTemp: forecastObj.Temperature.Maximum.Value,
@@ -89,8 +93,14 @@ function Weather(options) {
             dayIconText: forecastObj.Day.IconPhrase,
             nightIconClass: setWeatherIcon(forecastObj.Night.Icon),
             nightIconText: forecastObj.Night.IconPhrase,
-            windSpeed: forecastObj.Day.Wind.Value || 0
+            windSpeed: 0
+        };
+
+        if (forecastObj.Day.Wind) {
+            forecast.windSpeed = forecastObj.Day.Wind.Speed.Value;
         }
+
+        return forecast;
     }
 
     self.reloadButton.addEventListener('click', () => {
@@ -103,14 +113,57 @@ function Weather(options) {
 
     self.detailsButton.addEventListener('change', detailsSwitch);
 
+    self.defaultCity.addEventListener('change', () => {
+        sendRequest(requestUrl());
+    });
+
+    self.defaultType.addEventListener('change', () => {
+        sendRequest(requestUrl());
+    });
+
     sendRequest(requestUrl());
 }
 
-function getAddress(url, request, location, key, details = false, metric = false) {
+function getRequestType(value) {
+    let requestType;
+    switch(value) {
+        case '1day':
+        case '5day':
+        case '10day':
+        case '15day': requestType = 'daily';
+                    break;
+        case '1hour':
+        case '12hour': requestType = 'hourly';
+                    break;
+    };
+
+    return requestType;
+}
+
+function getAddress(url, requestType, requestLink, location, key, details = false, metric = false) {
     let detailsFlag = details ? '&details=true' : '';
     let metricFlag = metric ? '&metric=true' : '';
-    let address = `${url}${request}${location}?apikey=${key}${detailsFlag}${metricFlag}`;
+    let address = `${url}/${requestType}/${requestLink}/${location}?apikey=${key}${detailsFlag}${metricFlag}`;
     return address;
+}
+
+function createTemp(value, iconClass, iconText, parent) {
+    let row = document.createElement('div').classList.add('weather-row');
+    let iconRow = document.createElement('div').classList.add('icons-row');
+    let temp = document.createElement('div').classList.add('temperature');
+    let icon = document.createElement('div').classList.add('icon');
+    let iconEl = document.createElement('i').classList.add(iconClass);
+    let iconPhrase = document.createElement('div').classList.add(iconText);
+
+    icon.append(iconEl);
+    iconRow.append(iconPhrase);
+    temp.append(document.createElement('span').append(value));
+    temp.append(document.createElement('span').append('&deg;C'));
+    row.append(iconRow);
+    row.append(temp);
+
+    parent.append(row);
+    
 }
 
 function createWind(parent, text) {
@@ -122,7 +175,7 @@ function createWind(parent, text) {
 
 function deleteWind(parent) {
     let windBlock = parent.querySelectorAll('.wind');
-    windBlock.forEach(() => this.remove());
+    windBlock.forEach((elem) => elem.remove());
 }
 
 function setWeatherIcon (icon) {
