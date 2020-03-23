@@ -17,6 +17,7 @@ function Weather(options) {
     this.defaultCity = this.form.querySelector('[name="city"]');
     this.defaultType = this.form.querySelector('[name="type"]');
     this.detailsButton = this.form.querySelector('[name="details"]');
+    this.detailsHolder = this.form.querySelector('.primary-frame');
     this.reloadButton = widget.querySelector('.reload-btn');
     this.maxTempField = widget.querySelector('.temperature .max');
     this.minTempField = widget.querySelector('.temperature .min');
@@ -26,9 +27,13 @@ function Weather(options) {
     this.nightIconText = widget.querySelector('.night-icon .icon-phrase');
     this.dateField = widget.querySelector('.date-value');
 
+    let detailsFlag = false;
+
     let self = this;
 
-    let requestUrl = getAddress(baseUrl, requestLink, locationCode, apiKey, false, true);
+    function requestUrl() {
+        return getAddress(baseUrl, requestLink, locationCode, apiKey, detailsFlag, true)
+    }
     
     function sendRequest(url) {
         return fetch(url, {
@@ -59,14 +64,46 @@ function Weather(options) {
                 self.dayIconText.innerText = forecast.dayIconText;
                 self.nightIcon.classList.add('fa', forecast.nightIconClass);
                 self.nightIconText.innerText = forecast.nightIconText;
+
+                self.detailsFlag ? createWind(self.detailsHolder, forecast.windSpeed) : deleteWind(self.detailsHolder);
             });
     }
 
+    function detailsSwitch() {
+        if (this.checked) {
+            detailsFlag = true;
+            sendRequest(requestUrl());
+        } else {
+            detailsFlag = false;
+            sendRequest(requestUrl());
+        }
+    }
+
+    function parseForecast(array) {
+        let forecastObj = array.DailyForecasts[0];
+        return {
+            date: forecastObj.Date,
+            minTemp: forecastObj.Temperature.Minimum.Value,
+            maxTemp: forecastObj.Temperature.Maximum.Value,
+            dayIconClass: setWeatherIcon(forecastObj.Day.Icon),
+            dayIconText: forecastObj.Day.IconPhrase,
+            nightIconClass: setWeatherIcon(forecastObj.Night.Icon),
+            nightIconText: forecastObj.Night.IconPhrase,
+            windSpeed: forecastObj.Day.Wind.Value || 0
+        }
+    }
+
     self.reloadButton.addEventListener('click', () => {
-        sendRequest(requestUrl);
+        sendRequest(requestUrl());
     });
 
-    sendRequest(requestUrl);
+    self.reloadButton.addEventListener('touchstart', () => {
+        sendRequest(requestUrl());
+    });
+
+    self.detailsButton.addEventListener('change', detailsSwitch);
+
+    sendRequest(requestUrl());
 }
 
 function getAddress(url, request, location, key, details = false, metric = false) {
@@ -76,17 +113,16 @@ function getAddress(url, request, location, key, details = false, metric = false
     return address;
 }
 
-function parseForecast(array) {
-    let forecastObj = array.DailyForecasts[0];
-    return {
-        date: forecastObj.Date,
-        minTemp: forecastObj.Temperature.Minimum.Value,
-        maxTemp: forecastObj.Temperature.Maximum.Value,
-        dayIconClass: setWeatherIcon(forecastObj.Day.Icon),
-        dayIconText: forecastObj.Day.IconPhrase,
-        nightIconClass: setWeatherIcon(forecastObj.Night.Icon),
-        nightIconText: forecastObj.Night.IconPhrase
-    }
+function createWind(parent, text) {
+    let windBlock = document.createElement('div');
+    windBlock.classList.add('wind');
+    windBlock.innerText = `Ветер ${text} км/ч`;
+    parent.append(windBlock);
+}
+
+function deleteWind(parent) {
+    let windBlock = parent.querySelectorAll('.wind');
+    windBlock.forEach(() => this.remove());
 }
 
 function setWeatherIcon (icon) {

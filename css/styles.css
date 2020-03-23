@@ -126,3 +126,8 @@ select {
 .reload-btn:hover {
   transform: rotateZ(360deg);
 }
+
+.wind {
+  text-align: center;
+  margin-bottom: 10px;
+}
