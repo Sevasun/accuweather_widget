@@ -43,7 +43,7 @@ function Weather(options) {
     let self = this;
 
     function requestUrl() {
-        return getAddress(baseUrl, requestType(), requestLink(), locationCode(), apiKey, detailsFlag, true)
+        return getAddress(baseUrl, requestType(), requestLink(), locationCode(), apiKey, detailsFlag, true);
     }
     
     function sendRequest(url) {
@@ -57,7 +57,7 @@ function Weather(options) {
             })
             .then((array) => {
                 console.log(array);
-                let forecast = parseForecast(array);
+                let forecast = parseForecast(array, 'DailyForecasts');
                 let date = forecast.date;
                 let forecastDate = new Date(date);
                 let options = {
@@ -67,12 +67,12 @@ function Weather(options) {
                     weekday: 'long'
                 };
                 self.dateField.innerText = forecastDate.toLocaleString('RU', options);
-                self.maxTempField.innerText = forecast.maxTemp;
-                self.minTempField.innerText = forecast.minTemp;
-                self.dayIcon.classList.add('fa', forecast.dayIconClass);
-                self.dayIconText.innerText = forecast.dayIconText;
-                self.nightIcon.classList.add('fa', forecast.nightIconClass);
-                self.nightIconText.innerText = forecast.nightIconText;
+
+                clearBlock(self.weatherStatus);
+
+                forecast.temp.forEach((el, i) => {
+                    createForecastRow(el, forecast.iconClass[i], forecast.iconText[i], self.weatherStatus);
+                })
 
                 detailsFlag ? createWind(self.detailsHolder, forecast.windSpeed) : deleteWind(self.detailsHolder);
             });
@@ -83,18 +83,36 @@ function Weather(options) {
             sendRequest(requestUrl());
     }
 
-    function parseForecast(array) {
-        const forecastObj = array.DailyForecasts[0];
+    function parseForecast(array, duration) {
+        const forecastObj = array[duration][0];
         let forecast = {
             date: forecastObj.Date,
-            minTemp: forecastObj.Temperature.Minimum.Value,
-            maxTemp: forecastObj.Temperature.Maximum.Value,
+            temp: [],
+            iconClass: [],
+            iconText: [],
             dayIconClass: setWeatherIcon(forecastObj.Day.Icon),
             dayIconText: forecastObj.Day.IconPhrase,
             nightIconClass: setWeatherIcon(forecastObj.Night.Icon),
             nightIconText: forecastObj.Night.IconPhrase,
             windSpeed: 0
         };
+
+        if (forecastObj.Temperature.Value && forecastObj.WeatherIcon) {
+            forecast.temp.push(forecastObj.Temperature.Value);
+            forecast.iconClass.push(setWeatherIcon(forecastObj.WeatherIcon));
+            forecast.iconText.push(forecastObj.IconPhrase);
+        } else if (forecastObj.Temperature.Maximum && forecastObj.Temperature.Minimum && forecastObj.Day.Icon) {
+            forecast.temp.push(forecastObj.Temperature.Maximum.Value);
+            forecast.temp.push(forecastObj.Temperature.Minimum.Value);
+            forecast.iconClass.push(setWeatherIcon(forecastObj.Day.Icon));
+            forecast.iconText.push(forecastObj.Day.IconPhrase);
+            forecast.iconClass.push(setWeatherIcon(forecastObj.Night.Icon));
+            forecast.iconText.push(forecastObj.Night.IconPhrase);
+        } else {
+            forecast.temp = [0];
+            forecast.iconClass = [setWeatherIcon('0')];
+            forecast.iconText = ['no status'];
+        }
 
         if (forecastObj.Day.Wind) {
             forecast.windSpeed = forecastObj.Day.Wind.Speed.Value;
@@ -130,11 +148,11 @@ function getRequestType(value) {
         case '1day':
         case '5day':
         case '10day':
-        case '15day': requestType = 'daily';
-                    break;
+        case '15day':   requestType = 'daily';
+                        break;
         case '1hour':
-        case '12hour': requestType = 'hourly';
-                    break;
+        case '12hour':  requestType = 'hourly';
+                        break;
     };
 
     return requestType;
@@ -147,23 +165,40 @@ function getAddress(url, requestType, requestLink, location, key, details = fals
     return address;
 }
 
-function createTemp(value, iconClass, iconText, parent) {
-    let row = document.createElement('div').classList.add('weather-row');
-    let iconRow = document.createElement('div').classList.add('icons-row');
-    let temp = document.createElement('div').classList.add('temperature');
-    let icon = document.createElement('div').classList.add('icon');
-    let iconEl = document.createElement('i').classList.add(iconClass);
-    let iconPhrase = document.createElement('div').classList.add(iconText);
+function clearBlock(block) {
+    while (block.firstChild) {
+        block.removeChild(block.lastChild);
+    }
+    return block;
+}
 
+function createForecastRow(value, iconClass, iconText, parent) {
+    let row = document.createElement('div');
+    let iconRow = document.createElement('div');
+    let temp = document.createElement('div');
+    let icon = document.createElement('div');
+    let iconEl = document.createElement('i');
+    let iconPhrase = document.createElement('div');
+    let degrees = document.createElement('span');
+    let tempValue = document.createElement('span');
+
+    iconPhrase.innerText = iconText;
+    row.classList.add('weather-row');
+    iconRow.classList.add('icons-row');
+    temp.classList.add('temperature');
+    icon.classList.add('icon');
+    iconEl.classList.add('fa', iconClass);
+    degrees.innerHTML = '&deg;C';
+    tempValue.innerText = value;
+    
     icon.append(iconEl);
+    iconRow.append(icon);
     iconRow.append(iconPhrase);
-    temp.append(document.createElement('span').append(value));
-    temp.append(document.createElement('span').append('&deg;C'));
+    temp.append(tempValue);
+    temp.append(degrees);
     row.append(iconRow);
     row.append(temp);
-
     parent.append(row);
-    
 }
 
 function createWind(parent, text) {
