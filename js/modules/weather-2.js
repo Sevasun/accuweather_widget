@@ -1,6 +1,7 @@
 function Weather(options) {
     let defaultOptions = {
-        apiKey: 'h0YJgo2hCXfxFIq1VoBN8ousyZa0Ijf2',
+        // apiKey: 'h0YJgo2hCXfxFIq1VoBN8ousyZa0Ijf2',
+        apiKey: 'vEtuYPnGloBUcgvmr3WAb0XAv1CVIHUO',
         baseUrl: 'http://dataservice.accuweather.com/forecasts/v1/',
         targetWidget: '.weather-widget',
         settingsForm: '.settings-form'
@@ -27,6 +28,10 @@ function Weather(options) {
     this.weatherStatus = widget.querySelector('.weather-status');
 
     let detailsFlag = false;
+    
+    let durationType = function() {
+        return getDurationType(self.defaultType.value);
+    };
 
     let locationCode = function() {
         return self.defaultCity.value;
@@ -57,24 +62,20 @@ function Weather(options) {
             })
             .then((array) => {
                 console.log(array);
-                let forecast = parseForecast(array, 'DailyForecasts');
-                let date = forecast.date;
-                let forecastDate = new Date(date);
-                let options = {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    weekday: 'long'
-                };
-                self.dateField.innerText = forecastDate.toLocaleString('RU', options);
-
                 clearBlock(self.weatherStatus);
+                let arrayEdited = array[durationType()];
+                arrayEdited.forEach((elem) => {
+                    let forecast = parseForecast(elem);
+                    let date = forecast.date;
 
-                forecast.temp.forEach((el, i) => {
-                    createForecastRow(el, forecast.iconClass[i], forecast.iconText[i], self.weatherStatus);
-                })
+                    createDate(date, self.weatherStatus);
 
-                detailsFlag ? createWind(self.detailsHolder, forecast.windSpeed) : deleteWind(self.detailsHolder);
+                    forecast.temp.forEach((el, i) => {
+                        createForecastRow(el, forecast.iconClass[i], forecast.iconText[i], self.weatherStatus);
+                    })
+
+                    detailsFlag ? createWind(self.detailsHolder, forecast.windSpeed) : deleteWind(self.detailsHolder);
+                });
             });
     }
 
@@ -83,17 +84,17 @@ function Weather(options) {
             sendRequest(requestUrl());
     }
 
-    function parseForecast(array, duration) {
-        const forecastObj = array[duration][0];
+    function parseForecast(obj) {
+        const forecastObj = obj;
         let forecast = {
             date: forecastObj.Date,
             temp: [],
             iconClass: [],
             iconText: [],
-            dayIconClass: setWeatherIcon(forecastObj.Day.Icon),
-            dayIconText: forecastObj.Day.IconPhrase,
-            nightIconClass: setWeatherIcon(forecastObj.Night.Icon),
-            nightIconText: forecastObj.Night.IconPhrase,
+            // dayIconClass: setWeatherIcon(forecastObj.Day.Icon),
+            // dayIconText: forecastObj.Day.IconPhrase,
+            // nightIconClass: setWeatherIcon(forecastObj.Night.Icon),
+            // nightIconText: forecastObj.Night.IconPhrase,
             windSpeed: 0
         };
 
@@ -158,6 +159,22 @@ function getRequestType(value) {
     return requestType;
 }
 
+function getDurationType(value) {
+    let durationType;
+    switch(value) {
+        case '1day':
+        case '5day':
+        case '10day':
+        case '15day':   durationType = 'DailyForecasts';
+                        break;
+        case '1hour':
+        case '12hour':  durationType = '';
+                        break;
+    };
+
+    return durationType;
+}
+
 function getAddress(url, requestType, requestLink, location, key, details = false, metric = false) {
     let detailsFlag = details ? '&details=true' : '';
     let metricFlag = metric ? '&metric=true' : '';
@@ -199,6 +216,25 @@ function createForecastRow(value, iconClass, iconText, parent) {
     row.append(iconRow);
     row.append(temp);
     parent.append(row);
+}
+
+function createDate(date, parent) {
+    let dateHolder = document.createElement('div');
+    let dateValue = document.createElement('span');
+    let forecastDate = new Date(date);
+    let options = {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        weekday: 'long'
+    };
+    dateValue.innerText = forecastDate.toLocaleString('RU', options);
+
+    dateHolder.classList.add('date');
+    dateValue.classList.add('date-value');
+
+    dateHolder.append(dateValue);
+    parent.append(dateHolder);
 }
 
 function createWind(parent, text) {
