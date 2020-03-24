@@ -18,18 +18,12 @@ function Weather(options) {
     this.detailsButton = this.form.querySelector('[name="details"]');
     this.detailsHolder = widget.querySelector('.primary-frame');
     this.reloadButton = widget.querySelector('.reload-btn');
-    this.maxTempField = widget.querySelector('.temperature .max');
-    this.minTempField = widget.querySelector('.temperature .min');
-    this.dayIcon = widget.querySelector('.day-icon .icon i');
-    this.nightIcon = widget.querySelector('.night-icon .icon i');
-    this.dayIconText = widget.querySelector('.day-icon .icon-phrase');
-    this.nightIconText = widget.querySelector('.night-icon .icon-phrase');
     this.dateField = widget.querySelector('.date-value');
     this.weatherStatus = widget.querySelector('.weather-status');
 
     let detailsFlag = false;
     
-    let durationType = function() {
+    let durationFlag = function() {
         return getDurationType(self.defaultType.value);
     };
 
@@ -61,9 +55,8 @@ function Weather(options) {
                 }
             })
             .then((array) => {
-                console.log(array);
                 clearBlock(self.weatherStatus);
-                let arrayEdited = array[durationType()];
+                let arrayEdited = durationFlag() ? array['DailyForecasts'] : array;
                 arrayEdited.forEach((elem) => {
                     let forecast = parseForecast(elem);
                     let date = forecast.date;
@@ -84,17 +77,36 @@ function Weather(options) {
             sendRequest(requestUrl());
     }
 
+    function createDate(date, parent) {
+        let dateHolder = document.createElement('div');
+        let dateValue = document.createElement('span');
+        let forecastDate = new Date(date);
+        let options = {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            weekday: 'long'
+        };
+        if(!durationFlag()) {
+            options.hour = 'numeric';
+            options.minute = 'numeric';
+        }
+        dateValue.innerText = forecastDate.toLocaleString('RU', options);
+    
+        dateHolder.classList.add('date');
+        dateValue.classList.add('date-value');
+    
+        dateHolder.append(dateValue);
+        parent.append(dateHolder);
+    }
+
     function parseForecast(obj) {
         const forecastObj = obj;
         let forecast = {
-            date: forecastObj.Date,
+            date: forecastObj.Date ? forecastObj.Date : forecastObj.DateTime,
             temp: [],
             iconClass: [],
             iconText: [],
-            // dayIconClass: setWeatherIcon(forecastObj.Day.Icon),
-            // dayIconText: forecastObj.Day.IconPhrase,
-            // nightIconClass: setWeatherIcon(forecastObj.Night.Icon),
-            // nightIconText: forecastObj.Night.IconPhrase,
             windSpeed: 0
         };
 
@@ -115,7 +127,7 @@ function Weather(options) {
             forecast.iconText = ['no status'];
         }
 
-        if (forecastObj.Day.Wind) {
+        if (forecastObj.Day && forecastObj.Day.Wind) {
             forecast.windSpeed = forecastObj.Day.Wind.Speed.Value;
         }
 
@@ -165,10 +177,10 @@ function getDurationType(value) {
         case '1day':
         case '5day':
         case '10day':
-        case '15day':   durationType = 'DailyForecasts';
+        case '15day':   durationType = true;
                         break;
         case '1hour':
-        case '12hour':  durationType = '';
+        case '12hour':  durationType = false;
                         break;
     };
 
@@ -216,25 +228,6 @@ function createForecastRow(value, iconClass, iconText, parent) {
     row.append(iconRow);
     row.append(temp);
     parent.append(row);
-}
-
-function createDate(date, parent) {
-    let dateHolder = document.createElement('div');
-    let dateValue = document.createElement('span');
-    let forecastDate = new Date(date);
-    let options = {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        weekday: 'long'
-    };
-    dateValue.innerText = forecastDate.toLocaleString('RU', options);
-
-    dateHolder.classList.add('date');
-    dateValue.classList.add('date-value');
-
-    dateHolder.append(dateValue);
-    parent.append(dateHolder);
 }
 
 function createWind(parent, text) {
@@ -307,54 +300,6 @@ function setWeatherIcon (icon) {
               break;
     }
     return iconClass;
-}
-
-function monthText (number) {
-    let month;
-    switch (number) {
-        case '01': 
-            month = 'января';
-            break;
-        case '02': 
-            month = 'февраля';
-            break;
-        case '03': 
-            month = 'марта';
-            break;
-        case '04': 
-            month = 'апреля';
-            break;
-        case '05': 
-            month = 'мая';
-            break;
-        case '06': 
-            month = 'июня';
-            break;
-        case '07': 
-            month = 'июля';
-            break;
-        case '08': 
-            month = 'августа';
-            break;
-        case '09': 
-            month = 'сентября';
-            break;
-        case '10': 
-            month = 'октября';
-            break;
-        case '11': 
-            month = 'ноября';
-            break;
-        case '12': 
-            month = 'декабря';
-            break;
-        }
-
-    return month;
-}
-
-function setTemperature(elem, temp) {
-    return elem.innerText = `${temp}&deg;C`;
 }
 
 export default Weather;
