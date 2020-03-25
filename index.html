@@ -13,10 +13,13 @@
 		<div class="page-wrapper">
 			<div class="weather-widget">
 				<div class="widget-inner">
+					<h2>Ferrari Accuweather widget</h2>
 					<div class="settings-frame">
 						<form class="settings-form">
 							<div class="input-container">
-								<label for="city">Choose your city</label>
+								<h3>
+									<label for="city">Choose your city</label>
+								</h3>
 								<select name="city" id="city">
 									<option value="323903">Kharkiv</option>
 									<option value="324505">Kyiv</option>
@@ -25,7 +28,9 @@
 								</select>
 							</div>
 							<div class="input-container">
-								<label for="type">Choose forecast type</label>
+								<h3>
+									<label for="type">Choose forecast type</label>
+								</h3>
 								<select name="type" id="type">
 									<option value="1day">Today</option>
 									<option value="1hour">1 hour</option>
@@ -33,42 +38,14 @@
 									<option value="5day">5 days</option>
 								</select>
 							</div>
-							<div class="input-container">
+							<div class="input-container checkbox-container">
 								<input type="checkbox" name="details" id="details" />
 								<label for="details">Check for more details</label>
 							</div>
 						</form>
 					</div>
 					<div class="primary-frame">
-						<div class="weather-status">
-							<div class="date">
-								<p>Погода <span class="date-value"></span></p>
-							</div>
-							<div class="weather-row">
-								<div class="icons-row day-icon">
-									<div class="icon">
-										<i class="fas fa-sun"></i>
-									</div>
-									<div class="icon-phrase">Clear</div>
-								</div>
-								<div class="temperature">
-									<span class="max">30</span>
-									<span>&deg;C</span>
-								</div>
-							</div>
-							<div class="weather-row">
-								<div class="icons-row night-icon">
-									<div class="icon">
-										<i></i>
-									</div>
-									<div class="icon-phrase"></div>
-								</div>
-								<div class="temperature">
-									<span class="min">22</span>
-									<span>&deg;C</span>
-								</div>
-							</div>
-						</div>
+						<div class="weather-status"></div>
 					</div>
 					<button class="reload-btn" type="button">
 						<i class="fas fa-sync"></i>

@@ -56,6 +56,7 @@ function Weather(options) {
             })
             .then((array) => {
                 clearBlock(self.weatherStatus);
+                deleteWind(self.detailsHolder);
                 let arrayEdited = durationFlag() ? array['DailyForecasts'] : array;
                 arrayEdited.forEach((elem) => {
                     let forecast = parseForecast(elem);

@@ -16,6 +16,10 @@ html, body{
   position: relative;
 }
 
+h2 {
+  margin: 0 0 .5em;
+}
+
 img {
   display: inline-block;
   vertical-align: top;
@@ -68,19 +72,48 @@ img {
 .settings-form {
   padding: 15px;
   font-size: 14px;
+  display: flex;
+  justify-content: space-between;
 }
 
 .settings-form .input-container {
   margin-bottom: 10px;
+  width: 45%;
+}
+
+.settings-form .checkbox-container {
+  display: none;
 }
 
 .settings-form input[type="text"],
 .settings-form input[type="search"],
 .settings-form input[type="url"],
 .settings-form input[type="email"],
-select {
+.settings-form select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
   width: 100%;
   padding: 8px 15px;
+  background-color: transparent;
+  border-color: rgba(255, 255, 255, .25);
+  color: #fff;
+  font-size: 1.35em;
+  font-weight: 700;
+  text-align-last: center;
+}
+
+.settings-form select option {
+  color: initial;
+}
+
+.settings-form select:focus {
+  outline: none;
+  border-color: rgba(255, 255, 25,, .5);
+}
+
+.settings-form select::-ms-expand {
+  display: none;
 }
 
 .weather-row {
@@ -126,6 +159,10 @@ select {
 
 .reload-btn:hover {
   transform: rotateZ(360deg);
+}
+
+.reload-btn:focus {
+  outline: none;
 }
 
 .wind {
